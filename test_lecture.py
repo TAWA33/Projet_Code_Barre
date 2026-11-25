@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from Lecture_code_barre.ean13 import EAN13Codes
 import Lecture_code_barre.signature as sgn
+import Lecture_code_barre.decodage as decode
 from skimage.filters import threshold_otsu
 
 # Initialization
@@ -33,7 +34,7 @@ print("Shape for u = 3 :", codes.get_codes(3)["A"].shape)
 
 
 # Image and ray (2 clicks)
-img = plt.imread('./img/barcode0.jpg')
+img = plt.imread('./img/orange.jpg')
 img = sgn.convert_to_gray(img)
 
 plt.figure(1)
@@ -139,3 +140,15 @@ else:
     plt.savefig('./figures/signature_2_binarized.png')
 
 plt.show()
+
+
+# Extraction of the partial signature in preparation for decoding
+s_p = decode.extract_partial_signature(binarized_2, u)
+print(s_p.shape)
+
+# Decoding the barcode
+codes = EAN13Codes(U_MAX)
+(digits, families, scores) = decode.decode_digits(s_p, codes, u)
+print("Digits :", digits)
+print("Families :", families)
+print("Scores :", scores)
