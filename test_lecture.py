@@ -34,7 +34,7 @@ print("Shape for u = 3 :", codes.get_codes(3)["A"].shape)
 
 
 # Image and ray (2 clicks)
-img = plt.imread('./img/orange.jpg')
+img = sgn.load_image("./img/beef.jpg")
 img = sgn.convert_to_gray(img)
 
 plt.figure(1)
