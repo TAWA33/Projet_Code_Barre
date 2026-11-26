@@ -13,6 +13,7 @@ def extract_partial_signature(signature, u):
     return s_p
 
 
+
 # Decode one digit: compare its partial signature (7u samples) with the codes of the allowed families
 # (["A", "B"] for the left digits, ["C"] for the right ones) and keep the closest one.
 def decode_digit(digit_signature, codes_u, families):
@@ -28,6 +29,7 @@ def decode_digit(digit_signature, codes_u, families):
     return (digit, family, score)
 
 
+
 # Decode the 12 digits of the barcode from the partial signatures s_p (12 x 7u, one row per digit)
 # Left digits are compared with families A and B, right digits with family C
 def decode_digits(s_p, codes, u):
@@ -41,3 +43,30 @@ def decode_digits(s_p, codes, u):
         else:
             (digits[i], families[i], scores[i]) = decode_digit(s_p[i], codes_u, ["C"])
     return (digits, families, scores)
+
+
+
+# Decode the first digit from the A/B sequence of digits 2 to 7
+def decode_first_digit(families, dict_first_digits):
+    concatenated = "".join(families[0:6])
+    if concatenated in dict_first_digits:
+        first_digit = dict_first_digits[concatenated]
+        return first_digit
+    else:
+        return None
+
+
+
+# Check the control key for the 13th digit.
+def check_control_key(digits_list):
+    total = 0
+    for i in range(len(digits_list) - 1):
+        if i % 2 == 0: # the first digit has the index 0 in the list, but has the rank 1 which is odd
+            total += digits_list[i]
+        else:
+            total += 3 * digits_list[i]
+    unit_digit = total % 10
+    if (10 - unit_digit) % 10 == digits_list[-1]:
+        return True
+    else:
+        return False

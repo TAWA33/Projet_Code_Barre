@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# test_lecture.py
-# Scratch script to test the functions of the Lecture_code_barre package
-# Run from the root folder (Projet_Code_Barre)
-
+# Script to test the functions of the Lecture_code_barre package
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -147,8 +144,17 @@ s_p = decode.extract_partial_signature(binarized_2, u)
 print(s_p.shape)
 
 # Decoding the barcode
-codes = EAN13Codes(U_MAX)
 (digits, families, scores) = decode.decode_digits(s_p, codes, u)
 print("Digits :", digits)
 print("Families :", families)
 print("Scores :", scores)
+
+first_digit = decode.decode_first_digit(families, codes.first_digit)
+print("first digit =", first_digit)
+
+all_digits = np.insert(digits, 0, first_digit)
+control_key = decode.check_control_key(all_digits)
+if control_key:
+    print("Barcode is valid")
+else:
+    print("Barcode is invalid")
