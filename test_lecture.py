@@ -31,7 +31,7 @@ print("Shape for u = 3 :", codes.get_codes(3)["A"].shape)
 
 
 # Image and ray (2 clicks)
-img = sgn.load_image("./img/beef.jpg")
+img = sgn.load_image("./img/barcode0.jpg")
 img = sgn.convert_to_gray(img)
 
 plt.figure(1)
@@ -149,12 +149,20 @@ print("Digits :", digits)
 print("Families :", families)
 print("Scores :", scores)
 
-first_digit = decode.decode_first_digit(families, codes.first_digit)
-print("first digit =", first_digit)
 
-all_digits = np.insert(digits, 0, first_digit)
-control_key = decode.check_control_key(all_digits)
-if control_key:
-    print("Barcode is valid")
+first_digit = decode.decode_first_digit(families, codes.first_digit)
+if first_digit is None:
+    print("Invalid reading: A/B sequence not in ean13 first-digit table")
 else:
-    print("Barcode is invalid")
+    print("first digit =", first_digit)
+
+    all_digits = np.insert(digits, 0, first_digit)
+    control_key = decode.check_control_key(all_digits)
+
+    edges = decode.count_edges(binarized_2)
+    print("Edges :", edges)
+
+    if control_key and edges == 58:
+        print("Barcode is valid")
+    else:
+        print("Barcode is invalid")

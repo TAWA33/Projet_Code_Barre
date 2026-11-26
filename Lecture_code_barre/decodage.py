@@ -70,3 +70,15 @@ def check_control_key(digits_list):
         return True
     else:
         return False
+
+
+
+# Count the edges (black <-> white switches) in a binarized signature
+# A correct EAN-13 reading always has exactly 58 edges (30 black bars, 29 white spaces between them)
+def count_edges(binarized_signature):
+    differences = np.diff(binarized_signature, n=1)
+    count = 0
+    for i in range(len(differences)):
+        if differences[i] == 1 or differences[i] == -1:
+            count += 1
+    return count
