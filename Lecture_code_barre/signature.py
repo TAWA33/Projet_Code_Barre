@@ -2,6 +2,14 @@
 
 import numpy as np
 from scipy.ndimage import map_coordinates
+from PIL import Image, ImageOps
+
+
+def load_image(path):
+    img = Image.open(path)
+    img = ImageOps.exif_transpose(img)
+    img = np.array(img)
+    return img
 
 
 # Convert any image to grey levels (2D array of floats in 0-255)
@@ -18,18 +26,18 @@ def convert_to_gray(img):
         Y = 0.299 * img[:, :, 0] + 0.587 * img[:, :, 1] + 0.114 * img[:, :, 2]
         return Y
     raise ValueError("convert_to_grey: unexpected image shape " + str(img.shape))
-        
-    
-    
+
+
+
 def signature_extraction(img, x1, y1, x2, y2, L):
     x_s = np.linspace(x1, x2, num=int(L))
     y_s = np.linspace(y1, y2, num=int(L))
     signature = map_coordinates(img, [y_s, x_s], order=1)
     return (x_s, y_s, signature)
-    
-             
-    
-    
+
+
+
+
 def otsu_threshold(signature):
     (hist, bin_edges) = np.histogram(signature, bins=256, range=(0, 256))
     w = np.cumsum(hist) / np.sum(hist)

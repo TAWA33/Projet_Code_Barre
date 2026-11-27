@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 
-# test_lecture.py
-# Scratch script to test the functions of the Lecture_code_barre package
-# Run from the root folder (Projet_Code_Barre)
-
+# Script to test the functions of the Lecture_code_barre package
 
 import numpy as np
 import matplotlib.pyplot as plt
 from Lecture_code_barre.ean13 import EAN13Codes
 import Lecture_code_barre.signature as sgn
+import Lecture_code_barre.decodage as decode
 from skimage.filters import threshold_otsu
 
 # Initialization
@@ -33,7 +31,7 @@ print("Shape for u = 3 :", codes.get_codes(3)["A"].shape)
 
 
 # Image and ray (2 clicks)
-img = plt.imread('./img/barcode0.jpg')
+img = sgn.load_image("./img/barcode0.jpg")
 img = sgn.convert_to_gray(img)
 
 plt.figure(1)
@@ -139,3 +137,32 @@ else:
     plt.savefig('./figures/signature_2_binarized.png')
 
 plt.show()
+
+
+# Extraction of the partial signature in preparation for decoding
+s_p = decode.extract_partial_signature(binarized_2, u)
+print(s_p.shape)
+
+# Decoding the barcode
+(digits, families, scores) = decode.decode_digits(s_p, codes, u)
+print("Digits :", digits)
+print("Families :", families)
+print("Scores :", scores)
+
+
+first_digit = decode.decode_first_digit(families, codes.first_digit)
+if first_digit is None:
+    print("Invalid reading: A/B sequence not in ean13 first-digit table")
+else:
+    print("first digit =", first_digit)
+
+    all_digits = np.insert(digits, 0, first_digit)
+    control_key = decode.check_control_key(all_digits)
+
+    edges = decode.count_edges(binarized_2)
+    print("Edges :", edges)
+
+    if control_key and edges == 58:
+        print("Barcode is valid")
+    else:
+        print("Barcode is invalid")
