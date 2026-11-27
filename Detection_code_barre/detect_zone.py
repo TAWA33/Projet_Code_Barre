@@ -9,6 +9,8 @@ from scipy import signal, ndimage, linalg
 from scipy.interpolate import RectBivariateSpline
 import cv2
 
+import time
+
 def plot_channels(channels,titles=None,res_factor=1):
     n=len(channels)
     if titles==None:
@@ -40,6 +42,12 @@ def div2_img(img, sigma_noise):
 
     return img_filt
 
+def build_pyramid(Y, min_size=300, sigma_noise=(0.5, 0.5)):
+    pyr = [Y]
+    while min(pyr[-1].shape[:2]) > min_size:
+        pyr.append(div2_img(pyr[-1], sigma_noise))
+    return pyr
+
 def G_2D(sigma):
     x = range(floor(-3*sigma), floor(3*sigma+1))
     X, Y = np.meshgrid(x, x)
@@ -64,7 +72,7 @@ def compute_gradI(Y, sigma_g):
     I_x = signal.fftconvolve(Y, gauss_x_prime, mode='same')
     I_y = signal.fftconvolve(Y, gauss_y_prime, mode='same')
 
-    plot_channels([I_x, I_y], ["I_x", "I_y"])
+    #plot_channels([I_x, I_y], ["I_x", "I_y"])
 
     # Normalization
     norm = np.sqrt(I_x**2 + I_y**2)
@@ -93,10 +101,10 @@ def compute_D_bin(Y, sigma_g, sigma_t, seuil_D):
     D = consistency_D(Txx, Tyy, Txy)
     D_bin = D > seuil_D
 
-    plot_channels([Y, D, D_bin], ["Y", "D", f"D > {seuil_D}"])
+    #plot_channels([Y, D, D_bin], ["Y", "D", f"D > {seuil_D}"])
     return D_bin
 
-def compute_valid_regions(D_bin, min_area, min_compacity, max_compacity):
+def compute_valid_regions(D_bin, min_compacity, max_compacity):
     L = sk.measure.label(D_bin)
     regions = sk.measure.regionprops(L)
     valid_regions = []
@@ -109,9 +117,9 @@ def compute_valid_regions(D_bin, min_area, min_compacity, max_compacity):
     for r in regions:
         if r.perimeter > 0:
             compacity = (4 * np.pi * r.area) / (r.perimeter ** 2)
-        if (compacity < max_compacity) & (compacity > min_compacity):
-            if r.area > mean_area + std_area:
-                valid_regions.append(r)
+            if (compacity < max_compacity) & (compacity > min_compacity):
+                if r.area > mean_area : #+ std_area:
+                    valid_regions.append(r)
 
     return valid_regions
 
@@ -138,12 +146,13 @@ sigma_noise = (0.5, 0.5) # Low pass Gaussian Filter (Reduction dimension image)
 sigma_g = 3 # Gaussian standard deviation (for G_x_prime / G_y_prime). Approx u
 sigma_t = 10 * sigma_g # Tensor standard deviation.
 seuil_D = 0.6
-min_area = 2e4
 min_compacity = 0.5
 max_compacity = 0.8 # Circle=1 / Square=0.78
 
+start_time = time.time()
+
 # Loading Image
-img_path = "./img/baguette.jpg"
+img_path = "./img/can.jpg"
 I = plt.imread(img_path)
 
 # Transform RGB -> YCbCr
@@ -158,7 +167,9 @@ Cr = I_YCbCr[:, :, 2]
 #     Y = div2_img(Y, sigma_noise)
 
 D_bin = compute_D_bin(Y, sigma_g, sigma_t, seuil_D)
-valid_regions = compute_valid_regions(D_bin, min_area, min_compacity, max_compacity)
+valid_regions = compute_valid_regions(D_bin, min_compacity, max_compacity)
+
+print("--- %s seconds ---" % (time.time() - start_time))
 
 plot_valid_regions_patches(I, valid_regions)
 
