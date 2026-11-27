@@ -57,6 +57,16 @@ def binarize_signature(signature, k):
 
 
 
+# Scale a signature to 0-1 using the mean of the black samples and the mean of the white samples
+# (separated by the Otsu threshold k), then cap the values to 0-1
+# def normalize_signature_means(signature, k):
+#     mean_black = np.mean(signature[signature <= k])
+#     mean_white = np.mean(signature[signature > k])
+#     normalized = (signature - mean_black) / (mean_white - mean_black)
+#     normalized = np.clip(normalized, 0, 1)
+#     return normalized
+
+
 
 def find_useful_ray(binarized, x_s, y_s):
     index = np.where(binarized == 0)[0]
